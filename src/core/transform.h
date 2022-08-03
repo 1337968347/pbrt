@@ -20,11 +20,11 @@ struct Matrix4x4
               float t20, float t21, float t22, float t23,
               float t30, float t31, float t32, float t33);
 
-    bool operator==(float mat[4][4]) const
+    bool operator==(const Matrix4x4 &m2) const
     {
         for (int i = 0; i < 4; i++)
             for (int j = 0; j < 4; j++)
-                if (m[i][j] != mat[i][j])
+                if (m[i][j] != m2.m[i][j])
                     return false;
 
         return true;
@@ -62,5 +62,39 @@ struct Matrix4x4
         return r;
     }
 
-    friend Matrix4x4 Inverse(const Matrix4x4 *);
+    friend Matrix4x4 Inverse(const Matrix4x4 &);
+};
+
+class Transform
+{
+private:
+    Matrix4x4 m, mInv;
+
+public:
+    Transform(){};
+    Transform(const Matrix4x4 &mat) : m(mat), mInv(Inverse(mat)) {}
+    Transform(const Matrix4x4 &mat, const Matrix4x4 &mInv) : m(mat), mInv(mInv) {}
+    void print(FILE *f) const;
+    // 逆
+    friend Transform Inverse(const Transform &t)
+    {
+        return Transform(t.mInv, t.m);
+    }
+    // 转置
+    friend Transform Transpose(const Transform &t)
+    {
+        return Transform(Transpose(t.m), Transpose(t.mInv));
+    }
+
+    bool operator==(const Transform &t)
+    {
+        return t.m == m && t.mInv == mInv;
+    }
+
+    bool operator!=(const Transform &t)
+    {
+        return !(t.m == m) || !(t.mInv == mInv);
+    }
+
+    Transform operator*(const Transform &t) const;
 };

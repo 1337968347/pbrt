@@ -131,10 +131,110 @@ class Vector
 public:
     Vector() { x = y = z = 0.f; }
     Vector(float xx, float yy, float zz) : x(xx), y(yy), z(zz){};
+    Vector(const Vector &v)
+    {
+        x = v.x;
+        y = v.y;
+        z = v.z;
+    };
     bool HasNaNs() const
     {
         return isnan(x) || isnan(y) || isnan(z);
     }
-    explicit Vector(const Vector &v);
+
+    Vector &operator=(const Vector &v)
+    {
+        x = v.x;
+        y = v.y;
+        z = v.z;
+        return *this;
+    }
+
+    Vector operator+(const Vector &v) const
+    {
+        return Vector(x + v.x, y + v.y, z + v.z);
+    }
+
+    Vector &operator+=(const Vector &v)
+    {
+        x += v.x;
+        y += v.y;
+        z += v.z;
+        return *this;
+    }
+
+    Vector operator-(const Vector &v) const
+    {
+        return Vector(x - v.x, y - v.y, z - v.z);
+    }
+
+    Vector &operator-=(const Vector &v)
+    {
+        x -= v.x;
+        y -= v.y;
+        z -= v.z;
+        return *this;
+    }
+
+    Vector operator*(float f) const { return Vector(f * x, f * y, f * z); }
+
+    Vector &operator*=(float f)
+    {
+        x *= f;
+        y *= f;
+        z *= f;
+        return *this;
+    }
+    Vector operator/(float f) const
+    {
+        float inv = 1.f / f;
+        return Vector(x * inv, y * inv, z * inv);
+    }
+
+    Vector &operator/=(float f)
+    {
+        float inv = 1.f / f;
+        x *= inv;
+        y *= inv;
+        z *= inv;
+        return *this;
+    }
+    Vector operator-() const { return Vector(-x, -y, -z); }
+    float operator[](int i) const
+    {
+        return (&x)[i];
+    }
+
+    float &operator[](int i)
+    {
+        return (&x)[i];
+    }
+
+    float LengthSquared() const { return x * x + y * y + z * z; }
+    float Length() const { return sqrtf(LengthSquared()); }
+    explicit Vector(const Normal &n);
+
+    bool operator==(const Vector &v) const
+    {
+        return x == v.x && y == v.y && z == v.z;
+    }
+    bool operator!=(const Vector &v) const
+    {
+        return x != v.x || y != v.y || z != v.z;
+    }
+    float x, y, z;
+};
+
+class Normal
+{
+public:
+    Normal()
+    {
+        x = 0.f;
+        y = 0.f;
+        z = 0.f;
+    }
+    Normal(float xx, float yy, float zz) : x(xx), y(yy), z(zz) {};
+
     float x, y, z;
 };

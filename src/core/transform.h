@@ -3,25 +3,33 @@
 #include "pbrt.h"
 
 // 4 * 4 矩阵
-struct Matrix4x4
-{
+struct Matrix4x4 {
     float m[4][4];
-    Matrix4x4()
-    {
+    Matrix4x4() {
         m[0][0] = m[1][1] = m[2][2] = m[3][3] = 1.f;
-        m[0][1] = m[0][2] = m[0][3] = m[1][0] =
-            m[1][2] = m[1][3] = m[2][0] = m[2][1] = m[2][3] =
-                m[3][0] = m[3][1] = m[3][2] = 0.f;
+        m[0][1] = m[0][2] = m[0][3] = m[1][0] = m[1][2] = m[1][3] = m[2][0] =
+            m[2][1] = m[2][3] = m[3][0] = m[3][1] = m[3][2] = 0.f;
     }
     Matrix4x4(float mat[4][4]);
 
-    Matrix4x4(float t00, float t01, float t02, float t03,
-              float t10, float t11, float t12, float t13,
-              float t20, float t21, float t22, float t23,
-              float t30, float t31, float t32, float t33);
+    Matrix4x4(float t00,
+              float t01,
+              float t02,
+              float t03,
+              float t10,
+              float t11,
+              float t12,
+              float t13,
+              float t20,
+              float t21,
+              float t22,
+              float t23,
+              float t30,
+              float t31,
+              float t32,
+              float t33);
 
-    bool operator==(const Matrix4x4 &m2) const
-    {
+    bool operator==(const Matrix4x4& m2) const {
         for (int i = 0; i < 4; i++)
             for (int j = 0; j < 4; j++)
                 if (m[i][j] != m2.m[i][j])
@@ -30,16 +38,13 @@ struct Matrix4x4
         return true;
     }
 
-    friend Matrix4x4 Transpose(const Matrix4x4 &);
+    friend Matrix4x4 Transpose(const Matrix4x4&);
 
-    void Print(FILE *f) const
-    {
+    void Print(FILE* f) const {
         fprintf(f, "[ ");
-        for (int i = 0; i < 4; ++i)
-        {
+        for (int i = 0; i < 4; ++i) {
             fprintf(f, "  [ ");
-            for (int j = 0; j < 4; ++j)
-            {
+            for (int j = 0; j < 4; ++j) {
                 fprintf(f, "%f", m[i][j]);
                 if (j != 3)
                     fprintf(f, ", ");
@@ -49,52 +54,43 @@ struct Matrix4x4
         fprintf(f, " ] ");
     }
 
-    static Matrix4x4 Mul(const Matrix4x4 &m1, const Matrix4x4 &m2)
-    {
+    static Matrix4x4 Mul(const Matrix4x4& m1, const Matrix4x4& m2) {
         Matrix4x4 r;
         for (int i = 0; i < 4; i++)
             for (int j = 0; j < 4; j++)
-                r.m[i][j] = m1.m[i][0] * m2.m[0][j] +
-                            m1.m[i][0] * m2.m[0][j] +
-                            m1.m[i][0] * m2.m[0][j] +
-                            m1.m[i][0] * m2.m[0][j];
+                r.m[i][j] = m1.m[i][0] * m2.m[0][j] + m1.m[i][0] * m2.m[0][j] +
+                            m1.m[i][0] * m2.m[0][j] + m1.m[i][0] * m2.m[0][j];
 
         return r;
     }
 
-    friend Matrix4x4 Inverse(const Matrix4x4 &);
+    friend Matrix4x4 Inverse(const Matrix4x4&);
 };
 
-class Transform
-{
-private:
+class Transform {
+   private:
     Matrix4x4 m, mInv;
 
-public:
+   public:
     Transform(){};
-    Transform(const Matrix4x4 &mat) : m(mat), mInv(Inverse(mat)) {}
-    Transform(const Matrix4x4 &mat, const Matrix4x4 &mInv) : m(mat), mInv(mInv) {}
-    void print(FILE *f) const;
+    Transform(const Matrix4x4& mat) : m(mat), mInv(Inverse(mat)) {}
+    Transform(const Matrix4x4& mat, const Matrix4x4& mInv)
+        : m(mat), mInv(mInv) {}
+    void print(FILE* f) const;
     // 逆
-    friend Transform Inverse(const Transform &t)
-    {
+    friend Transform Inverse(const Transform& t) {
         return Transform(t.mInv, t.m);
     }
     // 转置
-    friend Transform Transpose(const Transform &t)
-    {
+    friend Transform Transpose(const Transform& t) {
         return Transform(Transpose(t.m), Transpose(t.mInv));
     }
 
-    bool operator==(const Transform &t)
-    {
-        return t.m == m && t.mInv == mInv;
-    }
+    bool operator==(const Transform& t) { return t.m == m && t.mInv == mInv; }
 
-    bool operator!=(const Transform &t)
-    {
+    bool operator!=(const Transform& t) {
         return !(t.m == m) || !(t.mInv == mInv);
     }
 
-    Transform operator*(const Transform &t) const;
+    Transform operator*(const Transform& t) const;
 };

@@ -1,9 +1,9 @@
 #pragma once
 
 #include <math.h>
-#include <iostream>
 #include <stdio.h>
 #include <string.h>
+#include <iostream>
 #include <string>
 
 using std::swap;

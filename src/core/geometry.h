@@ -306,3 +306,18 @@ class RayDifferential : public Ray {
     Point rxOrigin, ryOrigin;
     Vector rxDirection, ryDirection;
 };
+
+class BBox {
+   public:
+    BBox() {
+        pMax = Point(INFINITY, INFINITY, INFINITY);
+        pMin = Point(-INFINITY, -INFINITY, -INFINITY);
+    };
+
+    BBox(const Point& p1, const Point& p2) {
+        pMin = Point(min(p1.x, p2.x), min(p1.y, p2.y), min(p1.z, p2.z));
+        pMax = Point(max(p1.x, p2.x), max(p1.y, p2.y), max(p1.z, p2.z));
+    }
+
+    Point pMin, pMax;
+};

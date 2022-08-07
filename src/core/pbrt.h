@@ -7,3 +7,5 @@
 #include <string>
 
 using std::swap;
+using std::min;
+using std::max;

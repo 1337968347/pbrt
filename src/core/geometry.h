@@ -47,8 +47,8 @@ class Point {
         return *this;
     }
 
-    Point operator-(const Point& p) const {
-        return Point(x - p.x, y - p.y, z - p.z);
+    Vector operator-(const Point& p) const {
+        return Vector(x - p.x, y - p.y, z - p.z);
     }
 
     Point operator-(const Vector& v) const {
@@ -89,7 +89,9 @@ class Point {
 
     float& operator[](int i) { return (&x)[i]; }
 
-    bool operator==(const Point& p) { return p.x == x && p.y == y && p.z == z; }
+    bool operator==(const Point& p) const {
+        return p.x == x && p.y == y && p.z == z;
+    }
 
     bool operator!=(const Point& p) const {
         return x != p.x || y != p.y || z != p.z;
@@ -107,7 +109,9 @@ class Vector {
         y = v.y;
         z = v.z;
     };
+
     bool HasNaNs() const { return isnan(x) || isnan(y) || isnan(z); }
+    explicit Vector(const Point& p);
 
     Vector& operator=(const Vector& v) {
         x = v.x;
@@ -318,6 +322,123 @@ class BBox {
         pMin = Point(min(p1.x, p2.x), min(p1.y, p2.y), min(p1.z, p2.z));
         pMax = Point(max(p1.x, p2.x), max(p1.y, p2.y), max(p1.z, p2.z));
     }
+    // 是否有重叠
+    bool Overlaps(const BBox& b) const {
+        bool x = (pMax.x >= b.pMin.x) && (pMin.x <= b.pMax.x);
+        bool y = (pMax.y >= b.pMin.y) && (pMin.y <= b.pMax.y);
+        bool z = (pMax.z >= b.pMin.z) && (pMin.z <= b.pMax.z);
+        return x && y && z;
+    }
+
+    // 点是否在包围盒里
+    bool Inside(const Point& pt) const {
+        return pt.x >= pMin.x && pt.x <= pMax.x && pt.y >= pMin.y &&
+               pt.y <= pMax.y && pt.z >= pMin.z && pt.z <= pMax.z;
+    }
+
+    void Expand(float delta) {
+        pMin -= Vector(delta, delta, delta);
+        pMax += Vector(delta, delta, delta);
+    }
+
+    float SurfaceArea() const {
+        Vector box = pMax - pMin;
+        return 2.f * (box.x * box.y + box.x * box.z + box.y * box.z);
+    }
+
+    float Volume() const {
+        Vector box = pMax - pMin;
+        return box.x * box.y * box.z;
+    }
+
+    int MaximumExtent() const {
+        Vector box = pMax - pMin;
+        if (box.x > box.y && box.x > box.z) {
+            return 0;
+        } else if (box.y > box.z) {
+            return 1;
+        } else {
+            return 2;
+        }
+    }
+
+    const Point& operator[](int i) const;
+    Point& operator[](int i);
+
+    Point Lerp(float tx, float ty, float tz) const {
+        return Point(::Lerp(tx, pMin.x, pMax.x), ::Lerp(ty, pMin.y, pMax.y),
+                     ::Lerp(tz, pMin.z, pMax.z));
+    }
+
+    Vector Offset(const Point& p) {
+        return Vector((p.x - pMin.x) / (pMax.x - pMin.x),
+                      (p.y - pMin.y) / (pMax.y - pMin.y),
+                      (p.z - pMin.z) / (pMax.z - pMin.z));
+    }
+
+    void BoundingSphere(const Point* c, const float* rad) const;
+
+    bool IntersectP(const Ray& ray,
+                    float* hitt0 = NULL,
+                    float* hitt1 = NULL) const;
+
+    bool operator==(const BBox& b) const {
+        return b.pMin == pMin && b.pMax == pMax;
+    }
+
+    bool operator!=(const BBox& b) const {
+        return b.pMin != pMin || b.pMax != pMax;
+    }
 
     Point pMin, pMax;
 };
+
+// Geometry Inline Functions
+inline Vector::Vector(const Point& p) : x(p.x), y(p.y), z(p.z) {}
+
+inline Vector operator*(float f, const Vector& v) {
+    return v * f;
+}
+
+inline float Dot(const Vector& v1, const Vector& v2) {
+    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+}
+
+inline float AbsDot(const Vector& v1, const Vector& v2) {
+    return fabsf(Dot(v1, v2));
+}
+
+inline Vector Cross(const Vector& v1, const Vector& v2) {
+    return Vector(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z,
+                  v1.x * v2.y - v1.y * v2.x);
+}
+
+inline Vector Cross(const Normal& v1, const Vector& v2) {
+    return Vector(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z,
+                  v1.x * v2.y - v1.y * v2.x);
+}
+
+inline Vector Cross(const Vector& v1, const Normal& v2) {
+    return Vector(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z,
+                  v1.x * v2.y - v1.y * v2.x);
+}
+
+inline Vector Normalize(const Vector& v) {
+    return v / v.Length();
+}
+
+inline float Distance(const Point& p1, const Point& p2) {
+    return (p1 - p2).Length();
+}
+
+inline float DistanceSquared(const Point& p1, const Point& p2) {
+    return (p1 - p2).LengthSquared();
+}
+
+inline Point operator*(float f, const Point& p) {
+    return p * f;
+}
+
+inline Normal operator*(float f, const Normal& n) {
+    return Normal(f * n.x, f * n.y, f * n.z);
+}

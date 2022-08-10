@@ -322,6 +322,8 @@ class BBox {
         pMin = Point(min(p1.x, p2.x), min(p1.y, p2.y), min(p1.z, p2.z));
         pMax = Point(max(p1.x, p2.x), max(p1.y, p2.y), max(p1.z, p2.z));
     }
+    friend BBox Union(const BBox& b, const Point& p);
+    friend BBox Union(const BBox& b, const BBox& b2);
     // 是否有重叠
     bool Overlaps(const BBox& b) const {
         bool x = (pMax.x >= b.pMin.x) && (pMin.x <= b.pMax.x);
@@ -396,6 +398,8 @@ class BBox {
 // Geometry Inline Functions
 inline Vector::Vector(const Point& p) : x(p.x), y(p.y), z(p.z) {}
 
+inline Vector::Vector(const Normal& n) : x(n.x), y(n.y), z(n.z) {}
+
 inline Vector operator*(float f, const Vector& v) {
     return v * f;
 }
@@ -441,4 +445,80 @@ inline Point operator*(float f, const Point& p) {
 
 inline Normal operator*(float f, const Normal& n) {
     return Normal(f * n.x, f * n.y, f * n.z);
+}
+
+inline Normal Normalize(const Normal& n) {
+    return n / n.Length();
+}
+
+inline float Dot(const Normal& n1, const Vector& v2) {
+    return n1.x * v2.x + n1.y * v2.y + n1.z * v2.z;
+}
+
+inline float Dot(const Vector& v1, const Normal& n2) {
+    return v1.x * n2.x + v1.y * n2.y + v1.z * n2.z;
+}
+
+inline float Dot(const Normal& n1, const Normal& n2) {
+    return n1.x * n2.x + n1.y * n2.y + n1.z * n2.z;
+}
+
+inline float AbsDot(const Normal& n1, const Vector& v2) {
+    return fabsf(n1.x * v2.x + n1.y * v2.y + n1.z * v2.z);
+}
+
+inline float AbsDot(const Vector& v1, const Normal& n2) {
+    return fabsf(v1.x * n2.x + v1.y * n2.y + v1.z * n2.z);
+}
+
+inline float AbsDot(const Normal& n1, const Normal& n2) {
+    return fabsf(n1.x * n2.x + n1.y * n2.y + n1.z * n2.z);
+}
+
+inline Normal Faceforward(const Normal& n, const Vector& v) {
+    return Dot(n, v) < 0.f ? -n : n;
+}
+
+inline Normal Faceforward(const Normal& n, const Normal& n2) {
+    return (Dot(n, n2) < 0.f) ? -n : n;
+}
+
+inline Vector Faceforward(const Vector& v, const Vector& v2) {
+    return (Dot(v, v2) < 0.f) ? -v : v;
+}
+
+inline Vector Faceforward(const Vector& v, const Normal& n2) {
+    return (Dot(v, n2) < 0.f) ? -v : v;
+}
+
+inline const Point& BBox::operator[](int i) const {
+    return (&pMin)[i];
+}
+
+inline Point& BBox::operator[](int i) {
+    return (&pMin)[i];
+}
+
+// x = sin(o1) * cos(o2)  y = sin(o1) sin(o2)  z = cos(o1)
+inline Vector SphericalDirection(float sintheta, float costheta, float phi) {
+    return Vector(sintheta * cosf(phi), sintheta * sinf(phi), costheta);
+}
+
+inline Vector SphericalDirection(float sintheta,
+                                 float costheta,
+                                 float phi,
+                                 const Vector& x,
+                                 const Vector& y,
+                                 const Vector& z) {
+    return sintheta * cosf(phi) * x + sintheta * sinf(phi) * y + costheta * z;
+}
+
+//
+inline float SphericalTheta(const Vector& v) {
+    return acosf(Clamp(v.z, -1.f, 1.f));
+}
+
+inline float SphericalPhi(const Vector& v) {
+    float p = atan2f(v.y, v.x);
+    return (p < 0.f) ? p + 2.f * M_PI : p;
 }

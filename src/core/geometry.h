@@ -1,4 +1,4 @@
-#include <pbrt.h>
+#include "pbrt.h"
 
 class Point {
    public:

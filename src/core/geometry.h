@@ -378,7 +378,7 @@ class BBox {
                       (p.z - pMin.z) / (pMax.z - pMin.z));
     }
 
-    void BoundingSphere(const Point* c, const float* rad) const;
+    void BoundingSphere(Point* c, float* rad) const;
 
     bool IntersectP(const Ray& ray,
                     float* hitt0 = NULL,
@@ -513,11 +513,12 @@ inline Vector SphericalDirection(float sintheta,
     return sintheta * cosf(phi) * x + sintheta * sinf(phi) * y + costheta * z;
 }
 
-//
+// 球形 左右的角度
 inline float SphericalTheta(const Vector& v) {
     return acosf(Clamp(v.z, -1.f, 1.f));
 }
 
+// 球形上下的角度
 inline float SphericalPhi(const Vector& v) {
     float p = atan2f(v.y, v.x);
     return (p < 0.f) ? p + 2.f * M_PI : p;

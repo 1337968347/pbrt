@@ -196,4 +196,43 @@ inline Ray Transform::operator()(const Ray& r) const {
     return ret;
 }
 
-inline void Transform::operator()(const Ray& r, Ray* rt) const {}
+inline void Transform::operator()(const Ray& r, Ray* rt) const {
+    (*this)(r.o, &rt->o);
+    (*this)(r.d, &rt->d);
+    if (rt != &r) {
+        rt->mint = r.mint;
+        rt->maxt = r.maxt;
+        rt->time = r.time;
+        rt->depth = r.depth;
+    }
+}
+
+inline RayDifferential Transform::operator()(const RayDifferential& r) const {
+    RayDifferential ret;
+    (*this)(Ray(r), &ret);
+    ret.hasDifferentials = r.hasDifferentials;
+    (*this)(r.rxOrigin, &ret.rxOrigin);
+    (*this)(r.rxDirection, &ret.rxDirection);
+    (*this)(r.ryOrigin, &ret.ryOrigin);
+    (*this)(r.ryDirection, &ret.ryDirection);
+    return ret;
+}
+
+inline void Transform::operator()(const RayDifferential& r,
+                                  RayDifferential* rt) const {
+    (*this)(Ray(r), rt);
+    rt->hasDifferentials = r.hasDifferentials;
+    (*this)(r.rxOrigin, &rt->rxOrigin);
+    (*this)(r.rxDirection, &rt->rxDirection);
+    (*this)(r.ryOrigin, &rt->ryOrigin);
+    (*this)(r.ryDirection, &rt->ryDirection);
+}
+
+class AnimatedTransform {
+   public:
+   private:
+    const float startTime, endTime;
+    const Transform *startTransform, *endTransform;
+    const bool actuallyAnimated;
+    Vector T[2];
+};

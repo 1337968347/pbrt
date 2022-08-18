@@ -284,6 +284,7 @@ class Ray {
 
 // 微分
 class RayDifferential : public Ray {
+   public:
     RayDifferential() : hasDifferentials(false){};
     RayDifferential(const Point& org,
                     const Vector& dir,

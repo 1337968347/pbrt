@@ -7,6 +7,8 @@
 #include <string.h>
 #include <iostream>
 #include <string>
+#include <vector>
+using std::vector;
 
 using std::max;
 using std::min;
